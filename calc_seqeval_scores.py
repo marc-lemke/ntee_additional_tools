@@ -6,6 +6,8 @@ Voraussetzungen:
     - eine Prediction-Datei im Format, wie es NTEE bei einer Prediction erzeugt
 
 Einstellungen anpassen:
+    - TEI Reader Config
+        in dictionary: current_tei_reader_config
     - Entitätensklassen und Entitätenklassencodierung
         in dictionary: current_tei_writer_mapping
     - Spracheinstellung für korrekte Satztrennung (falls die Goldstandard-Datei im XML-Format übergeben wird)
