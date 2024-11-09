@@ -118,16 +118,21 @@ if __name__ == "__main__":
         "Ort-Objekt-BK": ["Ort-Objekt-BK", {}], 
         "Ort-Abstrakt": ["Ort-Abstrakt", {}], 
         "Ort-Abstrakt-BK": ["Ort-Abstrakt-BK", {}],
+        "Ort-ALT": ["Ort-ALT", {}],
         "Bewegung-Subjekt": ["Bewegung-Subjekt", {}], 
         "Bewegung-Objekt": ["Bewegung-Objekt", {}], 
         "Bewegung-Licht": ["Bewegung-Licht", {}], 
         "Bewegung-Schall": ["Bewegung-Schall", {}], 
         "Bewegung-Geruch": ["Bewegung-Geruch", {}], 
+        "Bewegung-ALT": ["Bewegung-ALT", {}],
         "Dimensionierung-Menge": ["Dimensionierung-Menge", {}], 
         "Dimensionierung-Abstand": ["Dimensionierung-Abstand", {}], 
         "Dimensionierung-Groesse": ["Dimensionierung-Groesse", {}], 
+        "Dimensionierung-ALT": ["Dimensionierung-ALT", {}],
         "Richtung": ["Richtung", {}], 
-        "Positionierung": ["Positionierung", {}]
+        "Richtung-ALT": ["Richtung-ALT", {}], 
+        "Positionierung": ["Positionierung", {}],
+        "Positionierung-ALT": ["Positionierung-ALT", {}]
     }
 
     current_language_for_sentence_seperation = "German"
@@ -263,16 +268,16 @@ if __name__ == "__main__":
         return performance_dict
 
     result = f"""
-    PERFORMANCE:
-    ############
+PERFORMANCE:
+############
     
-    {str(performance_measure(y_true=y_true, y_pred=y_pred))}
+{json.dumps(performance_measure(y_true=y_true, y_pred=y_pred), sort_keys=True, indent=4)}
 
-    SCORES:
-    #######
+SCORES:
+#######
 
-    {classification_report(y_true=y_true, y_pred=y_pred, mode="strict", scheme=IOB2)}
-    """
+{classification_report(y_true=y_true, y_pred=y_pred, mode="strict", scheme=IOB2)}
+"""
     print(result)
 
     # export result
