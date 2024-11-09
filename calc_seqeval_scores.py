@@ -9,7 +9,7 @@ Einstellungen anpassen:
     - TEI Reader Config
         in dictionary: current_tei_reader_config
     - Entitätensklassen und Entitätenklassencodierung
-        in dictionary: current_tei_writer_mapping
+        in dictionary: current_tei_writer_mapping (= "entity_dict"-Teil einer Writer-Definition)
     - Spracheinstellung für korrekte Satztrennung (falls die Goldstandard-Datei im XML-Format übergeben wird)
         in string: current_language_for_sentence_seperation
 
@@ -31,6 +31,7 @@ Parameter:
 
 # import modules
 from typing import Union
+from collections.abc import Iterable
 from seqeval.metrics import classification_report
 from seqeval.scheme import IOB2
 from tei_entity_enricher.util.spacy_lm import get_spacy_lm
@@ -101,21 +102,34 @@ if __name__ == "__main__":
         iob2_data = tp.split_into_sentences(teifile.build_tagged_text_line_list())
         return iob2_data
 
+    # file in /TR_Configs folder
     current_tei_reader_config = {
-        "exclude_tags": ["rdg"],
-        "name": "UJA Edition",
-        "use_notes": True,
-        "note_tags": ["note"],
-        "template": True,
+        "exclude_tags": [], 
+        "note_tags": [], 
+        "name": "CANSpiN_Reader-Config", 
+        "use_notes": False, 
+        "template": False
     }
+    # "entity_dict" part of a writer definition in /TNW folder
     current_tei_writer_mapping = {
-        "date": ["date", {}],
-        "pers": ["persName", {"subtype": "person"}],
-        "city": ["placeName", {"subtype": "city"}],
-        "ground": ["placeName", {"subtype": "ground"}],
-        "water": ["placeName", {"subtype": "water"}],
-        "org": ["orgName", {}],
+        "Ort-Container": ["Ort-Container", {}], 
+        "Ort-Container-BK": ["Ort-Container-BK", {}], 
+        "Ort-Objekt": ["Ort-Objekt", {}], 
+        "Ort-Objekt-BK": ["Ort-Objekt-BK", {}], 
+        "Ort-Abstrakt": ["Ort-Abstrakt", {}], 
+        "Ort-Abstrakt-BK": ["Ort-Abstrakt-BK", {}],
+        "Bewegung-Subjekt": ["Bewegung-Subjekt", {}], 
+        "Bewegung-Objekt": ["Bewegung-Objekt", {}], 
+        "Bewegung-Licht": ["Bewegung-Licht", {}], 
+        "Bewegung-Schall": ["Bewegung-Schall", {}], 
+        "Bewegung-Geruch": ["Bewegung-Geruch", {}], 
+        "Dimensionierung-Menge": ["Dimensionierung-Menge", {}], 
+        "Dimensionierung-Abstand": ["Dimensionierung-Abstand", {}], 
+        "Dimensionierung-Groesse": ["Dimensionierung-Groesse", {}], 
+        "Richtung": ["Richtung", {}], 
+        "Positionierung": ["Positionierung", {}]
     }
+
     current_language_for_sentence_seperation = "German"
     # mögliche Sprachen: German, English, Multilingual, French, Spanish
 
@@ -131,6 +145,11 @@ if __name__ == "__main__":
         if true_file_extension == ".xml"
         else None
     )
+
+    # debug / transformation xml > json (uncomment if your input is xml and you want to save the transformation result)
+    # if retrieved_iob2_data:
+        # with open("true.json", mode="w", encoding="utf8") as fw:
+            # fw.write(json.dumps(retrieved_iob2_data))
 
     def get_true_file_content(
         filepath: str, retrieved_iob2_data: Union[dict, None]
@@ -172,13 +191,28 @@ if __name__ == "__main__":
     y_true = unpack_strings_out_of_lists(y_true_file_content)
     y_pred = unpack_strings_out_of_lists(y_pred_file_content)
 
+    # unify shape of y_true and y_pred lists by flattening and creating nested list structure 
+    def flatten(list):
+     for item in list:
+         if isinstance(item, Iterable) and not isinstance(item, str):
+             for x in flatten(item):
+                 yield x
+         else:        
+             yield item
+    y_true = list(flatten(y_true))
+    y_pred = list(flatten(y_pred))
+
+    words_per_sentence_amount = 20
+    y_true = [[word for word in y_true[i:i + words_per_sentence_amount]] for i in range(0, len(y_true), words_per_sentence_amount)]
+    y_pred = [[word for word in y_pred[i:i + words_per_sentence_amount]] for i in range(0, len(y_pred), words_per_sentence_amount)]
+
     # debug: print und save transformation results (uncomment if you want to debug)
     # print(f"y_true = {y_true}")
     # print(f"y_pred = {y_pred}")
     # with open("y_true.json", mode="w", encoding="utf8") as fw:
-    #     fw.write(json.dumps(y_true))
+        # fw.write(json.dumps(y_true))
     # with open("y_pred.json", mode="w", encoding="utf8") as fw:
-    #     fw.write(json.dumps(y_pred))
+        # fw.write(json.dumps(y_pred))
 
     # get and print result
     def performance_measure(y_true, y_pred):
